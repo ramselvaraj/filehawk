@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
+#include <memory.h>
 
 #include <sys/inotify.h>
 #include <libnotify/notify.h>
@@ -30,8 +32,10 @@ int main(int argc, char** argv){
   const struct inotify_event* watchEvent;
   
   notify_init ("I'm watching you!");
-  NotifyNotification * Message = notify_notification_new ("Filehawk", "I'm watching you!", "dialog-information");
-  
+  NotifyNotification * Message = notify_notification_new ("Filehawk", "I'm watching you ;)", "dialog-information");
+  notify_notification_show (Message, NULL);
+  g_object_unref(G_OBJECT(Message));
+
   const uint32_t watchMask = IN_CREATE | IN_DELETE | IN_ACCESS | IN_CLOSE_WRITE | IN_MODIFY | IN_MOVE_SELF;
 
   if (argc < 2){
@@ -78,37 +82,48 @@ int main(int argc, char** argv){
       watchEvent = (const struct inotify_event *) bufferPointer;
 
       if (watchEvent->mask & IN_CREATE){
-        notificationMessage = "File Created.\n";
+        notificationMessage = "File Created. \n";
       }
 
       if (watchEvent->mask & IN_DELETE){
-        notificationMessage = "File Deleted.\n";
+        notificationMessage = "File Deleted. \n";
       }
 
       if (watchEvent->mask & IN_ACCESS){
-        notificationMessage = "File Accessed.\n";
+        notificationMessage = "File Accessed. \n";
       }
 
       if (watchEvent->mask & IN_CLOSE_WRITE){
-        notificationMessage = "File written and close.\n";
+        notificationMessage = "File written and closed. \n";
       }
 
       if (watchEvent->mask & IN_MODIFY){
-        notificationMessage = "File modified.\n";
+        notificationMessage = "File modified. \n";
       }
 
       if (watchEvent->mask & IN_MOVE_SELF){
-        notificationMessage = "File moved.\n";
+        notificationMessage = "File moved. \n";
       }
 
       if (notificationMessage == NULL){
         continue;
       }
-      Message = notify_notification_new ("Alert!", notificationMessage , "dialog-information");
+      time_t rawtime;
+      struct tm* timeinfo;
+      time (&rawtime);
+      timeinfo = localtime (&rawtime);
+      char* timestr = asctime(timeinfo);    
+      char* message = (char *)malloc(3 + strlen(notificationMessage) + strlen(timestr));
+      strcpy(message, notificationMessage);
+      char * ptr1 = message + strlen(message);
+      strcpy(ptr1, timestr);      
+      
+
+      Message = notify_notification_new ("Alert!", message, "dialog-information");
       notify_notification_show (Message, NULL);
       g_object_unref(G_OBJECT(Message));
-
-      printf("%s\n", notificationMessage);
+      //printf("%s\n", message);
+      //printf("%s\n", notificationMessage);
     }
   }
   exit(EXT_SUCCESS);
