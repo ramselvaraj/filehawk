@@ -28,7 +28,10 @@ int main(int argc, char** argv){
   int readLength;
 
   const struct inotify_event* watchEvent;
-
+  
+  notify_init ("I'm watching you!");
+  NotifyNotification * Message = notify_notification_new ("Filehawk", "I'm watching you!", "dialog-information");
+  
   const uint32_t watchMask = IN_CREATE | IN_DELETE | IN_ACCESS | IN_CLOSE_WRITE | IN_MODIFY | IN_MOVE_SELF;
 
   if (argc < 2){
@@ -101,6 +104,9 @@ int main(int argc, char** argv){
       if (notificationMessage == NULL){
         continue;
       }
+      Message = notify_notification_new ("Alert!", notificationMessage , "dialog-information");
+      notify_notification_show (Message, NULL);
+      g_object_unref(G_OBJECT(Message));
 
       printf("%s\n", notificationMessage);
     }
