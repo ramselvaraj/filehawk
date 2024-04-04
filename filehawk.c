@@ -42,7 +42,7 @@ int main(int argc, char** argv){
     fprintf(stderr, "USAGE: filehawk PATH");
     exit(EXT_ERR_TOO_FEW_ARGS);
   }
-
+  
   basePath = (char *)malloc(sizeof(char)*(strlen(argv[1]) + 1)); //allocate space that is size of char data type * length of input path
   strcpy(basePath, argv[1]);
 
@@ -60,13 +60,13 @@ int main(int argc, char** argv){
     fprintf(stderr, "Error intialising inotify instance.\n");
     exit(EXT_INIT_INOTIFY);
   }
-
+  
   IeventStatus = inotify_add_watch(IeventQueue, argv[1], watchMask);
   if(IeventStatus == -1){
     fprintf(stderr,"Error adding file to watch instance.\n");
     exit(EXT_ERR_ADD_WATCH);
   }
-
+  
   while(true){
     printf("Waiting for ievent....\n");
 
@@ -122,7 +122,7 @@ int main(int argc, char** argv){
       Message = notify_notification_new ("Alert!", message, "dialog-information");
       notify_notification_show (Message, NULL);
       g_object_unref(G_OBJECT(Message));
-      //printf("%s\n", message);
+      printf("%s\n", message);
       //printf("%s\n", notificationMessage);
     }
   }
