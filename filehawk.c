@@ -20,6 +20,23 @@
 
 int IeventQueue = -1;
 int IeventStatus = -1;
+
+//HANDLING SHUTDOWN GRACEFULLY
+//Catch shutdown signal so it exits properly.
+void sig_shutdown_handler(int signal){
+  int closeStatus;
+  printf("Exit signal received. \n Closing inotify descriptors...\n");
+
+  //not checking validity, assuming that they are initialised properly
+  if(closeStatus == -1){
+    fprintf(stderr, "Error removing file from inotift watch event.\n");
+  }
+  close(IeventQueue);
+
+  notify_uninit();
+  exit(EXT_SUCCESS);
+}
+
 int main(int argc, char** argv){
 
   char *basePath = NULL;
@@ -66,7 +83,9 @@ int main(int argc, char** argv){
     fprintf(stderr,"Error adding file to watch instance.\n");
     exit(EXT_ERR_ADD_WATCH);
   }
-  
+  signal(SIGABRT, sig_shutdown_handler);
+  signal(SIGINT, sig_shutdown_handler);
+  signal(SIGTERM, sig_shutdown_handler);
   while(true){
     printf("Waiting for ievent....\n");
 
@@ -113,7 +132,7 @@ int main(int argc, char** argv){
       time (&rawtime);
       timeinfo = localtime (&rawtime);
       char* timestr = asctime(timeinfo);    
-      char* message = (char *)malloc(3 + strlen(notificationMessage) + strlen(timestr));
+      char* message = (char *)malloc(1 + strlen(notificationMessage) + strlen(timestr));
       strcpy(message, notificationMessage);
       char * ptr1 = message + strlen(message);
       strcpy(ptr1, timestr);      
@@ -126,5 +145,4 @@ int main(int argc, char** argv){
       //printf("%s\n", notificationMessage);
     }
   }
-  exit(EXT_SUCCESS);
 }
