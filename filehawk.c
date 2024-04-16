@@ -17,9 +17,12 @@
 #define EXT_ERR_ADD_WATCH 3
 #define EXT_ERR_BASEPATH_NULL 4
 #define EXT_ERR_READ_INOTIFY 5
+#define EXT_ERR_LOGFILE_OPEN 6
+
 
 int IeventQueue = -1;
 int IeventStatus = -1;
+
 
 //HANDLING SHUTDOWN GRACEFULLY
 //Catch shutdown signal so it exits properly.
@@ -142,6 +145,15 @@ int main(int argc, char** argv){
       notify_notification_show (Message, NULL);
       g_object_unref(G_OBJECT(Message));
       printf("%s\n", message);
+
+      //FILE LOGGING-
+      FILE *fptr = fopen("filehawkLogs.txt", "w");
+        if(fptr == NULL){
+          fprintf(stderr,"Could not open logfile for Filehawk.\n");
+          exit(EXT_ERR_LOGFILE_OPEN);
+        }
+      fprintf(fptr, "[%s] - %s - %s\n", timestr, notificationMessage, argv[1]);
+      fclose(fptr);
       //printf("%s\n", notificationMessage);
     }
   }
